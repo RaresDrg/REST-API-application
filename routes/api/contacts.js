@@ -1,25 +1,107 @@
-const express = require('express')
+import express from "express";
 
-const router = express.Router()
+import contactsService from "../../models/contacts.js";
 
-router.get('/', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+const router = express.Router();
 
-router.get('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+router.get("/", async (req, res, next) => {
+  try {
+    const result = await contactsService.listContacts();
 
-router.post('/', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+    if (result === "operation failed") {
+      res.json({ status: "success", code: 204, message: "No data", data: [] });
+      return;
+    }
 
-router.delete('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+    res.status(200).json({ status: "succes", code: 200, data: result });
+  } catch (error) {
+    res.status(500).json({ message: `${error}` });
+  }
+});
 
-router.put('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+router.get("/:contactId", async (req, res, next) => {
+  try {
+    const { contactId } = req.params;
 
-module.exports = router
+    const result = await contactsService.getContactById(contactId);
+
+    if (result === "operation failed") {
+      res.status(404).json({ code: 404, message: "Not found" });
+      return;
+    }
+
+    res.status(200).json({ status: "succes", code: 200, data: result });
+  } catch (error) {
+    res.status(500).json({ message: `${error}` });
+  }
+});
+
+router.post("/", async (req, res, next) => {
+  try {
+    const { name, email, phone } = req.body;
+
+    const hasAllRequiredFields = name && email && phone;
+
+    if (!hasAllRequiredFields) {
+      res.status(400).json({ code: 400, message: "Missing required fields" });
+      return;
+    }
+
+    const result = await contactsService.addContact(req.body);
+
+    if (result === "operation failed") {
+      res.status(403).json({ code: 403, message: "Contact already exists" });
+      return;
+    }
+
+    res.status(201).json({ code: 201, message: "contact added", data: result });
+  } catch (error) {
+    res.status(500).json({ message: `${error}` });
+  }
+});
+
+router.delete("/:contactId", async (req, res, next) => {
+  try {
+    const { contactId } = req.params;
+
+    const result = await contactsService.removeContact(contactId);
+
+    if (result === "operation failed") {
+      res.status(404).json({ code: 404, message: "Not found" });
+      return;
+    }
+
+    res.status(200).json({ code: 200, message: "contact deleted" });
+  } catch (error) {
+    res.status(500).json({ message: `${error}` });
+  }
+});
+
+router.put("/:contactId", async (req, res, next) => {
+  try {
+    const { contactId } = req.params;
+    const { name, email, phone } = req.body;
+
+    const hasAllRequiredFields = name && email && phone;
+
+    if (!hasAllRequiredFields) {
+      res.status(400).json({ code: 400, message: "Missing required fields" });
+      return;
+    }
+
+    const result = await contactsService.updateContact(contactId, req.body);
+
+    if (result === "operation failed") {
+      res.status(404).json({ code: 404, message: "Not found" });
+      return;
+    }
+
+    res
+      .status(200)
+      .json({ code: 200, message: "contact updated", data: result });
+  } catch (error) {
+    res.status(500).json({ message: `${error}` });
+  }
+});
+
+export default router;
