@@ -1,8 +1,17 @@
 import express from "express";
-
+import Joi from "joi";
 import contactsService from "../../models/contacts.js";
 
 const router = express.Router();
+
+const contactsValidationSchema = Joi.object({
+  name: Joi.string().min(3).required(),
+  email: Joi.string().email({ minDomainSegments: 2 }).required(),
+  phone: Joi.string()
+    .regex(/^[0-9]{10}$/)
+    .messages({ "string.pattern.base": `Phone number must have 10 digits.` })
+    .required(),
+});
 
 router.get("/", async (req, res, next) => {
   try {
@@ -22,7 +31,6 @@ router.get("/", async (req, res, next) => {
 router.get("/:contactId", async (req, res, next) => {
   try {
     const { contactId } = req.params;
-
     const result = await contactsService.getContactById(contactId);
 
     if (result === "operation failed") {
@@ -38,12 +46,10 @@ router.get("/:contactId", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { name, email, phone } = req.body;
+    const { error } = contactsValidationSchema.validate(req.body);
 
-    const hasAllRequiredFields = name && email && phone;
-
-    if (!hasAllRequiredFields) {
-      res.status(400).json({ code: 400, message: "Missing required fields" });
+    if (error) {
+      res.status(400).json({ code: 400, message: error?.details[0].message });
       return;
     }
 
@@ -63,7 +69,6 @@ router.post("/", async (req, res, next) => {
 router.delete("/:contactId", async (req, res, next) => {
   try {
     const { contactId } = req.params;
-
     const result = await contactsService.removeContact(contactId);
 
     if (result === "operation failed") {
@@ -79,16 +84,14 @@ router.delete("/:contactId", async (req, res, next) => {
 
 router.put("/:contactId", async (req, res, next) => {
   try {
-    const { contactId } = req.params;
-    const { name, email, phone } = req.body;
+    const { error } = contactsValidationSchema.validate(req.body);
 
-    const hasAllRequiredFields = name && email && phone;
-
-    if (!hasAllRequiredFields) {
-      res.status(400).json({ code: 400, message: "Missing required fields" });
+    if (error) {
+      res.status(400).json({ code: 400, message: error?.details[0].message });
       return;
     }
 
+    const { contactId } = req.params;
     const result = await contactsService.updateContact(contactId, req.body);
 
     if (result === "operation failed") {
