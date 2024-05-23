@@ -9,7 +9,7 @@ const contactsValidationSchema = Joi.object({
   email: Joi.string().email({ minDomainSegments: 2 }).required(),
   phone: Joi.string()
     .regex(/^[0-9]{10}$/)
-    .messages({ "string.pattern.base": `Phone number must have 10 digits.` })
+    .messages({ "string.pattern.base": `phone number must have 10 digits.` })
     .required(),
 });
 
