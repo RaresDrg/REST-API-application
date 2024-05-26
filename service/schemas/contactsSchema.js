@@ -26,8 +26,8 @@ const schema = new Schema(
       type: Boolean,
       default: false,
     },
-  }
-  // ,{ collection: "contacts" }
+  },
+  { versionKey: false }
 );
 
 const Contact = model("contact", schema);
