@@ -4,6 +4,14 @@ function getAllContactsFromDB() {
   return Contact.find();
 }
 
+function getContactsPaginated(skip, limit) {
+  return Contact.find().skip(skip).limit(limit);
+}
+
+function getFilteredContactsFromDB(favoriteFilter) {
+  return Contact.find({ favorite: favoriteFilter });
+}
+
 function getSpecificContactFromDb(contactId) {
   return Contact.findById(contactId);
 }
@@ -24,8 +32,8 @@ function removeContactFromDB(contactId) {
   return Contact.findByIdAndDelete(contactId);
 }
 
-function updateContactFromDB(contactId, update) {
-  return Contact.findByIdAndUpdate(contactId, update, {
+function updateContactFromDB(contactId, updates) {
+  return Contact.findByIdAndUpdate(contactId, updates, {
     new: true,
     runValidators: true,
   });
@@ -41,6 +49,8 @@ function updateStatusContactFromDB(contactId, statusUpdate) {
 
 const contactsService = {
   getAllContactsFromDB,
+  getContactsPaginated,
+  getFilteredContactsFromDB,
   getSpecificContactFromDb,
   addContactToDB,
   removeContactFromDB,
