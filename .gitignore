@@ -1,5 +1,5 @@
-# node_modules/
-# environment/
+node_modules/
 environment/
+
 .idea
 .vscode
