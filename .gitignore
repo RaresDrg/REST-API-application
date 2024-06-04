@@ -1,5 +1,4 @@
-node_modules/
 environment/
-
+node_modules
 .idea
 .vscode
