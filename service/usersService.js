@@ -22,8 +22,6 @@ async function addUsertoDB(data) {
 }
 
 async function checkUserInDB(data) {
-  await User.validate(data);
-
   const user = await User.findOne({ email: data.email });
   if (!user) {
     return "email is wrong";
@@ -57,12 +55,11 @@ function getUser(userId) {
   return User.findById(userId);
 }
 
-function updateUser(userId, subscriptionUpdate) {
-  return User.findByIdAndUpdate(
-    userId,
-    { subscription: subscriptionUpdate },
-    { new: true, runValidators: true }
-  );
+function updateUser(userId, updates) {
+  return User.findByIdAndUpdate(userId, updates, {
+    new: true,
+    runValidators: true,
+  });
 }
 
 const usersService = {

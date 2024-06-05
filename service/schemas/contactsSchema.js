@@ -28,7 +28,7 @@ const schema = new Schema(
     },
     owner: {
       type: Schema.Types.ObjectId,
-      ref: "user",
+      ref: "users",
     },
   },
   { versionKey: false }

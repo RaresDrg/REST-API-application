@@ -37,7 +37,18 @@ async function signup(req, res, next) {
 
 async function login(req, res, next) {
   try {
-    const result = await usersService.checkUserInDB({ ...req.body });
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      res.status(400).json({
+        status: "failed",
+        code: 400,
+        message: "Missing fields. You must enter: email and password !",
+      });
+      return;
+    }
+
+    const result = await usersService.checkUserInDB({ email, password });
 
     if (result === "email is wrong" || result === "password is wrong") {
       res.status(400).json({
@@ -63,11 +74,6 @@ async function login(req, res, next) {
       },
     });
   } catch (error) {
-    if (error.name === "ValidationError") {
-      utils.handleValidationError(res, error.message);
-      return;
-    }
-
     next(error);
   }
 }
@@ -111,7 +117,7 @@ async function updateUserSubscription(req, res, next) {
       return;
     }
 
-    const updatedUser = await usersService.updateUser(userId, subscription);
+    const updatedUser = await usersService.updateUser(userId, { subscription });
 
     res.status(200).json({
       status: "succes",

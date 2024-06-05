@@ -1,15 +1,15 @@
 import Contact from "./schemas/contactsSchema.js";
 
-function getAllContactsFromDB() {
-  return Contact.find();
+function getAllContactsFromDB(owner) {
+  return Contact.find({ owner });
 }
 
-function getContactsPaginated(skip, limit) {
-  return Contact.find().skip(skip).limit(limit);
+function getContactsPaginated(owner, skip, limit) {
+  return Contact.find({ owner }).skip(skip).limit(limit);
 }
 
-function getFilteredContactsFromDB(favoriteFilter) {
-  return Contact.find({ favorite: favoriteFilter });
+function getFilteredContactsFromDB(owner, favoriteFilter) {
+  return Contact.find({ owner, favorite: favoriteFilter });
 }
 
 function getSpecificContactFromDb(contactId) {
@@ -32,19 +32,11 @@ function removeContactFromDB(contactId) {
   return Contact.findByIdAndDelete(contactId);
 }
 
-function updateContactFromDB(contactId, updates) {
+function updateContactInDB(contactId, updates) {
   return Contact.findByIdAndUpdate(contactId, updates, {
     new: true,
     runValidators: true,
   });
-}
-
-function updateStatusContactFromDB(contactId, statusUpdate) {
-  return Contact.findByIdAndUpdate(
-    contactId,
-    { favorite: statusUpdate },
-    { new: true, runValidators: true }
-  );
 }
 
 const contactsService = {
@@ -54,8 +46,7 @@ const contactsService = {
   getSpecificContactFromDb,
   addContactToDB,
   removeContactFromDB,
-  updateContactFromDB,
-  updateStatusContactFromDB,
+  updateContactInDB,
 };
 
 export default contactsService;

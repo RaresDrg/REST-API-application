@@ -3,17 +3,25 @@ import utils from "../utils/utils.js";
 
 async function listContacts(req, res, next) {
   try {
+    const owner = req.user.id;
     const { page, limit, favorite } = req.query;
 
     let contactsList;
 
     if (favorite === "true" || favorite === "false") {
-      contactsList = await contactsService.getFilteredContactsFromDB(favorite);
+      contactsList = await contactsService.getFilteredContactsFromDB(
+        owner,
+        favorite
+      );
     } else if (Number(page) && Number(limit)) {
       const skip = (page - 1) * limit;
-      contactsList = await contactsService.getContactsPaginated(skip, limit);
+      contactsList = await contactsService.getContactsPaginated(
+        owner,
+        skip,
+        limit
+      );
     } else {
-      contactsList = await contactsService.getAllContactsFromDB();
+      contactsList = await contactsService.getAllContactsFromDB(owner);
     }
 
     if (!contactsList || contactsList.length === 0) {
@@ -50,7 +58,10 @@ async function getContactById(req, res, next) {
 
 async function addContact(req, res, next) {
   try {
-    const newContact = { ...req.body };
+    const owner = req.user.id;
+    const { name, phone, email } = req.body;
+
+    const newContact = { name, phone, email, owner };
     const result = await contactsService.addContactToDB(newContact);
 
     if (result === "contact already exists") {
@@ -119,8 +130,8 @@ async function updateContact(req, res, next) {
     }
 
     const { contactId } = req.params;
-    const update = { ...req.body };
-    const result = await contactsService.updateContactFromDB(contactId, update);
+    const updates = { ...req.body };
+    const result = await contactsService.updateContactInDB(contactId, updates);
 
     if (!result) {
       res.status(404).json({ code: 404, message: "Not found" });
@@ -163,9 +174,9 @@ async function updateContactStatus(req, res, next) {
       return;
     }
 
-    const result = await contactsService.updateStatusContactFromDB(
+    const result = await contactsService.updateContactInDB(
       req.params.contactId,
-      favorite
+      { favorite }
     );
 
     if (!result) {
