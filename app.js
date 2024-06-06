@@ -4,6 +4,8 @@ import cors from "cors";
 import mongoose from "mongoose";
 import { configDotenv } from "dotenv";
 
+import validateAuth from "./config/config-passport.js";
+import usersRouter from "./routes/api/users.js";
 import contactsRouter from "./routes/api/contacts.js";
 
 configDotenv({ path: "./environment/.env" });
@@ -14,7 +16,8 @@ app.use(logger("dev"));
 app.use(cors());
 app.use(express.json());
 
-app.use("/api/contacts", contactsRouter);
+app.use("/api/users", usersRouter);
+app.use("/api/contacts", validateAuth, contactsRouter);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Not found" });

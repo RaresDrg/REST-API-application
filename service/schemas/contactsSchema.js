@@ -17,14 +17,18 @@ const schema = new Schema(
     },
     phone: {
       type: String,
-      minLength: [10, "phone number should have 10 digits"],
-      maxLength: [10, "phone number should have 10 digits"],
-      match: [/\d{10}/, "phone number should only have digits"],
+      minLength: [10, "=> should have 10 digits"],
+      maxLength: [10, "=> should have 10 digits"],
+      match: [/\d{10}/, "=> should only have digits"],
       required: [true, "=> this field is required"],
     },
     favorite: {
       type: Boolean,
       default: false,
+    },
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "users",
     },
   },
   { versionKey: false }
