@@ -1,6 +1,7 @@
 import User from "./schemas/usersSchema.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import gravatar from "gravatar";
 
 async function addUsertoDB(data) {
   await User.validate(data);
@@ -16,6 +17,7 @@ async function addUsertoDB(data) {
   const newUser = {
     email: data.email,
     password: encryptedPassword,
+    avatarURL: gravatar.url(data.email),
   };
 
   return User.create(newUser);
