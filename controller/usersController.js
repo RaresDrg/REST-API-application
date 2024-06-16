@@ -1,5 +1,8 @@
 import usersService from "../service/usersService.js";
 import utils from "../utils/utils.js";
+import path from "path";
+import fs from "fs/promises";
+import Jimp from "jimp";
 
 async function signup(req, res, next) {
   try {
@@ -94,8 +97,8 @@ async function logout(req, res, next) {
 
 async function getCurrentUserData(req, res, next) {
   try {
-    const { id, email, subscription } = req.user;
-    const userData = { id, email, subscription };
+    const { id, email, subscription, avatarURL } = req.user;
+    const userData = { id, email, subscription, avatarURL };
 
     res.status(200).json({ status: "success", code: 200, data: userData });
   } catch (error) {
@@ -124,7 +127,7 @@ async function updateUserSubscription(req, res, next) {
       code: 200,
       message: "User's subscription updated",
       data: {
-        email: updatedUser.email,
+        email: req.user.email,
         subscription: updatedUser.subscription,
       },
     });
@@ -138,12 +141,53 @@ async function updateUserSubscription(req, res, next) {
   }
 }
 
+async function updateUserAvatar(req, res, next) {
+  try {
+    if (!req.file) {
+      res.status(400).json({
+        status: "failed",
+        code: 400,
+        message: "You must enter an avatar",
+      });
+      return;
+    }
+
+    const userId = req.user.id;
+    const temporaryFilePath = req.file.path;
+
+    const fileExtension = path.extname(req.file.originalname);
+    const fileUniqueName = `${userId}${fileExtension}`;
+    const filePath = path.join(process.cwd(), "public/avatars", fileUniqueName);
+
+    const avatarImage = await Jimp.read(temporaryFilePath);
+    await avatarImage.resize(250, 250).write(temporaryFilePath);
+
+    await fs.rename(temporaryFilePath, filePath);
+
+    const avatarUpdates = { avatarURL: `/avatars/${fileUniqueName}` };
+    const updatedUser = await usersService.updateUser(userId, avatarUpdates);
+
+    res.status(200).json({
+      status: "succes",
+      code: 200,
+      message: "User's avatar updated",
+      data: {
+        email: req.user.email,
+        avatarURL: updatedUser.avatarURL,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 const usersController = {
   signup,
   login,
   logout,
   getCurrentUserData,
   updateUserSubscription,
+  updateUserAvatar,
 };
 
 export default usersController;
