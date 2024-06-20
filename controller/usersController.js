@@ -3,6 +3,7 @@ import utils from "../utils/utils.js";
 import path from "path";
 import fs from "fs/promises";
 import Jimp from "jimp";
+import sendConfirmRegistrationEmail from "../config/config-nodemailder.js";
 
 async function signup(req, res, next) {
   try {
@@ -17,16 +18,13 @@ async function signup(req, res, next) {
       return;
     }
 
+    sendConfirmRegistrationEmail(result.email, result.verificationToken);
+
     res.status(201).json({
       status: "success",
       code: 201,
-      message: "User created with success",
-      data: {
-        user: {
-          email: result.email,
-          subscription: result.subscription,
-        },
-      },
+      message:
+        "User created successfully. Now, check your email and confirm the registration.",
     });
   } catch (error) {
     if (error.name === "ValidationError") {
@@ -34,6 +32,78 @@ async function signup(req, res, next) {
       return;
     }
 
+    next(error);
+  }
+}
+
+async function verifyRegistration(req, res, next) {
+  try {
+    const { verificationToken } = req.params;
+    const result = await usersService.findUser({ verificationToken });
+
+    if (!result) {
+      res.status(404).json({ code: 404, message: "User not found" });
+      return;
+    }
+
+    if (result.verify === true) {
+      res.status(400).json({
+        status: "failed",
+        code: 400,
+        message: "Verification has already been passed",
+      });
+      return;
+    }
+
+    await usersService.updateUser(result.id, { verify: true });
+
+    res.status(200).json({
+      status: "succes",
+      code: 200,
+      message: "Verification successful",
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function repeatVerifyRegistration(req, res, next) {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      res.status(400).json({
+        status: "failed",
+        code: 400,
+        message: "Missing required field: => email",
+      });
+      return;
+    }
+
+    const result = await usersService.findUser({ email });
+
+    if (!result) {
+      res.status(404).json({ code: 404, message: "User not found" });
+      return;
+    }
+
+    if (result.verify === true) {
+      res.status(400).json({
+        status: "failed",
+        code: 400,
+        message: "Verification has already been passed",
+      });
+      return;
+    }
+
+    sendConfirmRegistrationEmail(result.email, result.verificationToken);
+
+    res.json({
+      status: "success",
+      code: 200,
+      message: "Verification email sent",
+    });
+  } catch (error) {
     next(error);
   }
 }
@@ -51,13 +121,23 @@ async function login(req, res, next) {
       return;
     }
 
-    const result = await usersService.checkUserInDB({ email, password });
+    const result = await usersService.checkUserLoginData({ email, password });
 
     if (result === "email is wrong" || result === "password is wrong") {
       res.status(400).json({
         status: "failed",
         code: 400,
         message: result,
+      });
+      return;
+    }
+
+    if (result.verify === false) {
+      res.status(400).json({
+        status: "failed",
+        code: 400,
+        message:
+          "You must confirm your registration first, then you can log in.",
       });
       return;
     }
@@ -147,7 +227,7 @@ async function updateUserAvatar(req, res, next) {
       res.status(400).json({
         status: "failed",
         code: 400,
-        message: "You must enter an avatar",
+        message: "You must add an avatar",
       });
       return;
     }
@@ -183,6 +263,8 @@ async function updateUserAvatar(req, res, next) {
 
 const usersController = {
   signup,
+  verifyRegistration,
+  repeatVerifyRegistration,
   login,
   logout,
   getCurrentUserData,

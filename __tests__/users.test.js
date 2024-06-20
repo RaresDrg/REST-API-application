@@ -25,6 +25,7 @@ describe("User's routes", () => {
         email: "test@yahoo.com",
         subscription: "starter",
         id: "asfafs51445asf4a",
+        verify: true,
       },
       "findOne"
     );
