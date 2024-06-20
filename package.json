@@ -8,7 +8,7 @@
     "start:dev": "cross-env NODE_ENV=development nodemon ./server.js",
     "lint": "eslint **/*.js",
     "lint:fix": "eslint --fix **/*.js",
-    "create-env": "mkdir environment && echo DB_HOST = '' JWT_SECRET = '' OUTLOOK_EMAIL = '' OUTLOOK_PASSWORD = '' SENDGRID_API_KEY= '' > environment/.env",
+    "create-env": "mkdir environment && echo DB_HOST = '' JWT_SECRET = '' OUTLOOK_EMAIL = '' OUTLOOK_PASSWORD = ''> environment/.env",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:dev": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch"
   },
