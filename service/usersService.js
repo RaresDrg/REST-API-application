@@ -2,6 +2,7 @@ import User from "./schemas/usersSchema.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
+import { nanoid } from "nanoid";
 
 async function addUsertoDB(data) {
   await User.validate(data);
@@ -18,12 +19,13 @@ async function addUsertoDB(data) {
     email: data.email,
     password: encryptedPassword,
     avatarURL: gravatar.url(data.email),
+    verificationToken: nanoid(),
   };
 
   return User.create(newUser);
 }
 
-async function checkUserInDB(data) {
+async function checkUserLoginData(data) {
   const user = await User.findOne({ email: data.email });
   if (!user) {
     return "email is wrong";
@@ -53,8 +55,8 @@ async function removeUserToken(userId) {
   await User.findByIdAndUpdate(userId, { token: null });
 }
 
-function getUser(userId) {
-  return User.findById(userId);
+function findUser(data) {
+  return User.findOne(data);
 }
 
 function updateUser(userId, updates) {
@@ -66,10 +68,10 @@ function updateUser(userId, updates) {
 
 const usersService = {
   addUsertoDB,
-  checkUserInDB,
+  checkUserLoginData,
   addUserToken,
   removeUserToken,
-  getUser,
+  findUser,
   updateUser,
 };
 

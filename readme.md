@@ -8,4 +8,4 @@
 
 ### Important:
 
-- `fiserul: .env` &mdash; dupa ce a fost generat cu comanda de mai sus, trebuie completat: cu valoarea uri-ului de la baza de date si cu o valoare pentru jwt secret key
+- `fiserul: .env` &mdash; dupa ce a fost generat cu comanda de mai sus, trebuie completat: cu valoarea uri-ului de la baza de date, cu o valoare pentru jwt secret key, si cu email si password pentru conectare la outlook
